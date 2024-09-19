@@ -3,10 +3,10 @@ version: '3.8'
 services:
   # Eureka Server
   eureka-server:
-    image: eureka-server-image
+    image: springcloud/demo-eureka-server
     container_name: eureka-server
     ports:
-      - "8761:8761" # Eureka server port
+      - "8771:8761"
     networks:
       - microservices
 
@@ -51,10 +51,12 @@ services:
 
   # Users microservice
   users-service:
-    image: users-service-image
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: users-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/userdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-users:5432/userdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: qawsed?
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
@@ -66,7 +68,9 @@ services:
 
   # Products microservice
   products-service:
-    image: products-service-image
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
     container_name: products-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-products:5432/productdb
@@ -81,7 +85,9 @@ services:
 
   # Orders microservice
   orders-service:
-    image: your-orders-service-image
+    build:
+      context: ./orderservice
+      dockerfile: Dockerfile
     container_name: orders-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-orders:5432/orderdb
@@ -96,19 +102,25 @@ services:
 
   # Gateway service
   gateway-service:
-    image: gateway-service-image
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
     container_name: gateway-service
     environment:
       SPRING_APPLICATION_NAME: gateway-service
       SERVER_PORT: 8089
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     ports:
-      - "8089:8089"
+      - "8090:8089"
     depends_on:
       - eureka-server
     networks:
       - microservices
 
+  # Prometheus
+
 networks:
   microservices:
     driver: bridge
+
+
